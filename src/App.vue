@@ -45,8 +45,7 @@
     const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`;
     const respuesta = await fetch(url);
     const data = await respuesta.json();
-
-    console.log(data.DISPLAY[criptomoneda][moneda]);
+  
     valor.value = data.DISPLAY[criptomoneda][moneda];
 
 
