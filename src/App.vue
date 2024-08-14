@@ -1,5 +1,6 @@
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, reactive, computed } from 'vue';
+  import Alerta from './Components/Alerta.vue';
 
   const monedas = ref([
     { codigo: 'USD', texto: 'Dolar de Estados Unidos'},
@@ -9,6 +10,47 @@
   ]);
 
   const criptomonedas = ref([]);
+
+  const cotizacion = reactive(
+    {
+      moneda: '',
+      criptomoneda: ''
+    }
+  );
+
+  const error = ref(false);
+
+  const isError = computed(()=>{
+    return error.value;
+  })
+
+  const valor = ref({})
+
+  const cotizarCripto = () => {
+    if(Object.values(cotizacion).includes('')){
+      console.log('Este es un mensaje de error');
+      error.value = true;
+      setTimeout(()=>{
+        error.value = false;
+      }, 2000);
+      return;
+    }
+
+    obtenerCotizacion();
+  
+  };
+
+  const obtenerCotizacion = async () => {
+    const { moneda, criptomoneda } = cotizacion;
+    const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`;
+    const respuesta = await fetch(url);
+    const data = await respuesta.json();
+
+    console.log(data.DISPLAY[criptomoneda][moneda]);
+    valor.value = data.DISPLAY[criptomoneda][moneda];
+
+
+  }
 
   onMounted(
     ()=>{
@@ -31,10 +73,15 @@
     <h1 class="titulo">Cotizador de <span>Criptomonedas</span></h1>
 
     <div class="contenido">
-        <form class="formulario">
+        <Alerta v-if="isError">Todos los campos son requeridos</Alerta>
+        <form 
+          class="formulario"
+          @submit.prevent="cotizarCripto">
           <div class="campo">
               <label for="moneda">Moneda:</label>
-              <select id="moneda">
+              <select 
+                id="moneda"
+                v-model="cotizacion.moneda">
                   <option value="">-- Selecciona --</option>
                   <option v-for="moneda in monedas" :value="moneda.codigo">
                     {{ moneda.texto }}
@@ -43,7 +90,9 @@
           </div>
           <div class="campo">
             <label for="cripto">Criptomoneda:</label>
-            <select id="cripto">
+            <select 
+              id="cripto"
+              v-model="cotizacion.criptomoneda">
                 <option value="">-- Selecciona --</option>
                 <option v-for="criptomoneda in criptomonedas" :value="criptomoneda.CoinInfo.Name">
                   {{ criptomoneda.CoinInfo.FullName }}
