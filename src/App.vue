@@ -1,33 +1,20 @@
 <script setup>
-  import { ref, onMounted, reactive, computed } from 'vue';
+  import { ref, reactive, computed } from 'vue';
   import Alerta from './Components/Alerta.vue';
+  import Spinner from './components/Spinner.vue';
+  import useCripto from './composables/useCripto';
 
-  const monedas = ref([
-    { codigo: 'USD', texto: 'Dolar de Estados Unidos'},
-    { codigo: 'MXN', texto: 'Peso Mexicano'},
-    { codigo: 'EUR', texto: 'Euro'},
-    { codigo: 'GBP', texto: 'Libra Esterlina'},
-  ]);
+  const { monedas, criptomonedas, valor, cargando, obtenerCotizacion, mostrarResultados } = useCripto();
 
-  const criptomonedas = ref([]);
-  
-  const valor = ref({});
-  
   const cotizacion = reactive(
-    {
-      moneda: '',
-      criptomoneda: ''
-    }
+        {
+          moneda: '',
+          criptomoneda: ''
+        }
   );
-
   const error = ref(false);
-
   const isError = computed(()=>{
     return error.value;
-  });
-
-  const mostrarResultados = computed(() => {
-      return Object.values(valor.value).length > 0;
   });
 
   const cotizarCripto = () => {
@@ -40,32 +27,8 @@
       return;
     }
 
-    obtenerCotizacion();
+    obtenerCotizacion(cotizacion);
   };
-
-  const obtenerCotizacion = async () => {
-    const { moneda, criptomoneda } = cotizacion;
-    const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`;
-    const respuesta = await fetch(url);
-    const data = await respuesta.json();
-  
-    valor.value = data.DISPLAY[criptomoneda][moneda];
-
-
-  }
-
-  onMounted(
-    ()=>{
-      fetch('https://min-api.cryptocompare.com/data/top/mktcapfull?limit=10&tsym=USD')
-      .then(respuesta => respuesta.json())
-      .then(data => {
-          criptomonedas.value = data.Data;
-      });
-
-    }
-  );
-
-
 
 </script>
 
@@ -99,11 +62,14 @@
                 <option v-for="criptomoneda in criptomonedas" :value="criptomoneda.CoinInfo.Name">
                   {{ criptomoneda.CoinInfo.FullName }}
                 </option>
-            </select>
-        </div>
+              </select>
+          </div>
 
-        <input type="submit" value="Cotizar" />
+          <input type="submit" value="Cotizar" />
         </form>
+
+        <Spinner v-if="cargando"/>
+
         <div 
           class="contenedor-resultado"
           v-if="mostrarResultados"
