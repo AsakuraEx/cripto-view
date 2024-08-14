@@ -10,7 +10,9 @@
   ]);
 
   const criptomonedas = ref([]);
-
+  
+  const valor = ref({});
+  
   const cotizacion = reactive(
     {
       moneda: '',
@@ -22,9 +24,11 @@
 
   const isError = computed(()=>{
     return error.value;
-  })
+  });
 
-  const valor = ref({})
+  const mostrarResultados = computed(() => {
+      return Object.values(valor.value).length > 0;
+  });
 
   const cotizarCripto = () => {
     if(Object.values(cotizacion).includes('')){
@@ -37,7 +41,6 @@
     }
 
     obtenerCotizacion();
-  
   };
 
   const obtenerCotizacion = async () => {
@@ -101,6 +104,26 @@
 
         <input type="submit" value="Cotizar" />
         </form>
+        <div 
+          class="contenedor-resultado"
+          v-if="mostrarResultados"
+        >
+          <h2>Cotización:</h2>
+          <div class="resultado">
+            <img 
+              :src="'https://cryptocompare.com/'+valor.IMAGEURL" 
+              alt="Imagen de resultado"
+            >
+
+            <div>
+              <p>El precio es de: <span>{{ valor.PRICE }}</span></p>
+              <p>El precio más alto del día: <span>{{ valor.HIGHDAY }}</span></p>
+              <p>El precio más bajo del día: <span>{{ valor.LOWDAY }}</span></p>
+              <p>Variación últimas 24 horas: <span>{{ valor.CHANGEPCT24HOUR }}</span></p>
+              <p>Última actualización: <span>{{ valor.LASTUPDATE }}</span></p>
+            </div>
+          </div>
+        </div>
     </div>
   </div>
 
